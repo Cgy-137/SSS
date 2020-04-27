@@ -1,0 +1,140 @@
+﻿
+@{
+    ViewBag.Title = "Xian";
+}
+
+<h2>Xian</h2>
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script src="~/Scripts/bootstrap.js"></script>
+<input id="remove" type="button" value="批量删除" />
+<table id="demo">
+    <thead class="table-condensed table">
+        <tr>
+            <td><input id="one" type="checkbox" />全选</td>
+            <td>商品编号</td>
+            <td>商品名称</td>
+            <td>商品分类名称</td>
+            <td>商品分类图片</td>
+            <td>商品品牌名称</td>
+            <td>商品品牌图片</td>
+            <td>商品库存</td>
+            <td>商品价格</td>
+            <td>商品市场价</td>
+            <td>商品单价</td>
+            <td>商品货号</td>
+            <td>商品规格</td>
+            <td>商品单价内重量</td>
+            <td>商品运费</td>
+            <td>商品状态</td>
+            <td>操作</td>
+        </tr>
+    </thead>
+    <tbody id="td"></tbody>
+</table>
+<table class="table">
+    <tr>
+        <td>总记录数<span id="TotalCount">0</span>条</td>
+        <td>总共<span id="TotalPage">1</span>页</td>
+        <td>当前<span id="CurrentPage">1</span>页</td>
+        <td><a href="javascript:;" onclick="Show(1)">首页</a></td>
+        <td><a href="javascript:;" onclick="Show(CurrentPage-1)">上一页</a></td>
+        <td><a href="javascript:;" onclick="Show(CurrentPage+1)">下一页</a></td>
+        <td><a href="javascript:;" onclick="Show(TotalPage)">尾页</a></td>
+    </tr>
+</table>
+<script>
+    //全选框
+    $("#one").click(function () {
+        $(":input:checkbox:gt(0)").prop("checked", $(this).prop("checked"))
+    });
+
+    $("#remove").click(function () {
+        var Pid = "";//创建一个数组
+        $("input:checkbox:gt(0):checked").each(function () {
+            var id = $(this).val();
+            Pid += id + ',';
+        });     
+        console.log(Pid)
+        var msg = "确定要删除吗？"
+        if (confirm(msg) == true) {
+            //异步访问批量删除方法，把数组传入controller层
+            $.ajax({
+                url: 'https://localhost:44325/api/GoShop/GDel?Pid=' + Pid,
+                type: "post",
+                success: function (data) {
+                    if (data > 0) {
+                        alert('删除成功');
+                        location.reload();
+                    }
+                    else {
+                        alert('删除失败');
+                    }
+                }
+            });
+        }
+        else { return false }
+    });
+    //单删
+    //function Delete(Pid) {
+    //    alert('sas');
+    //    if (confirm("确定删除吗？") == true) {
+    //        $.ajax({
+    //            url: 'https://localhost:44325/api/GoShop/Del',
+    //            data: '{Pid:Pid}',
+    //            type: 'get',
+    //            dataType: 'json',
+    //            success: function (d) {
+    //                if (d > 0) {
+    //                    alert('删除成功');
+    //                }
+    //            }
+    //        })
+    //    }
+    //}
+    //调用显示
+    $(function () {
+        Show();
+    })
+    function Show(page) {
+        
+        $.ajax({
+            url: "https://localhost:44325/api/GoShop/Get",
+            type: "GET",
+            dataType: "json",
+            data: { CurrentPage: page },
+            success: function (d) {
+                $("#TotalCount").text(d.TotalCount)
+                $("#TotalPage").text(d.TotalPage)
+                $("#CurrentPage").text(d.CurrentPage)
+                //最大页
+                TotalPage = d.TotalPage;
+                //当前页
+                CurrentPage = d.CurrentPage;
+                $("#td").empty();
+                
+                $(d.products).each(function () {
+                    var tr = "<tr>"
+                        + '<td><input id="Checkbox1" type="checkbox" value="' + this.Pid + '" /></td>'
+                        + "<td style='color:blueviolet'>" + this.Pid + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Pname + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Sname + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Spicture + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Bname + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Bpicture + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Pkucun + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Pprice + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Pmarket + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Pdanwei + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Phuohao + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Pguige + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Pzhong + "</td>"
+                        + "<td style='color:blueviolet'>" + this.Pyunfei + "</td>"
+                        + "<td style='color:blueviolet'>" + (this.Pstate == 1 ? '付款' : '未付款') + "</td>"
+                        + "</tr > "
+                    $("#td").append(tr);
+                })
+            }
+        })
+    }
+
+</script>
